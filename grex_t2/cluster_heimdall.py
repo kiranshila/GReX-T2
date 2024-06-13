@@ -322,6 +322,8 @@ def dump_cluster_results_json(
     maxsnr = tab["snr"].max()
     imaxsnr = np.where(tab["snr"] == maxsnr)[0][0]
     specnum = (int(itimes[imaxsnr]) - OFFSET) * DOWNSAMPLE
+    dm = tab["dm"][imaxsnr]
+    box = tab["ibox"][imaxsnr]
     mjd = tab["mjds"][imaxsnr]
 
     # if no injection file or no coincident injection
@@ -344,16 +346,28 @@ def dump_cluster_results_json(
     trigger_payload = {"candname": candname, "itime": int(itimes[imaxsnr])}
 
     # Check to see if the max SNR candidate corresponds with an injection
-    isinjection = database.is_injection(mjd, db_con)
-    if isinjection:
+    injection_id = database.find_injection(mjd, db_con)
+    if injection_id is not None:
         logging.info("Candidate corresponds with injection, skipping trigger")
+
+    # Dump this candidate also to the SQL database
+    database.insert_candidate(
+        candname,
+        dm,
+        maxsnr,
+        mjd,
+        box,
+        itimes[imaxsnr],
+        injection_id,
+        db_con,
+    )
 
     if len(tab) > 0:
         with open(outputfile, "w") as f:  # encoding='utf-8'
             logging.info(f"Writing trigger file for index {imaxsnr} with SNR={maxsnr}")
             json.dump(output_dict, f, ensure_ascii=False, indent=4)
 
-        if trigger and not isinjection:
+        if trigger and injection_id is None:
             send_trigger(trigger_payload)
 
         return row, candname, last_trigger_time

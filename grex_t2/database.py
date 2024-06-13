@@ -14,24 +14,21 @@ def create_tables(con: sqlite3.Connection):
         cur = con.cursor()
         # Setup the database's tables if they don't already exist
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS candidate (id INTEGER PRIMARY KEY AUTOINCREMENT, dm REAL NOT NULL, snr REAL NOT NULL, mjd REAL NOT NULL, boxcar INTEGER NOT NULL, sample INTEGER NOT NULL) STRICT"
-        )
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS injection (id INTEGER PRIMARY KEY AUTOINCREMENT, mjd REAL NOT NULL, filename TEXT NOT NULL, sample INTEGER NOT NULL) STRICT"
-        )
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS cluster (id INTEGER PRIMARY KEY AUTOINCREMENT, peak INTEGER NOT NULL, injection INTEGER, FOREIGN KEY (centroid) REFERENCES candidate (id), FOREIGN KEY (injection) REFERENCES injection (id)) STRICT"
-        )
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS cluster_member (candidate INTEGER PRIMARY KEY, cluster INTEGER NOT NULL, FOREIGN KEY (candidate) REFERENCES candidate (id), FOREIGN KEY (cluster) REFERENCES cluster (id)) WITHOUT ROWID"
-        )
-        cur.execute(
-            "CREATE TABLE IF NOT EXISTS trigger (id INTEGER PRIMARY KEY AUTOINCREMENT, cand_name TEXT, cluster INTEGER NOT NULL, FOREIGN KEY (cluster) REFERENCES cluster (id))"
+            """CREATE TABLE IF NOT EXISTS candidate (
+                cand_name TEXT PRIMARY KEY
+                dm REAL NOT NULL,
+                snr REAL NOT NULL,
+                mjd REAL NOT NULL,
+                boxcar INTEGER NOT NULL,
+                sample INTEGER NOT NULL
+                injection INTEGER, 
+                FOREIGN KEY (injection) REFERENCES injection (id)
+            ) STRICT NO ROWID"""
         )
 
 
-def is_injection(mjd: float, con: sqlite3.Connection) -> bool:
-    """Run a SQL query to see if T0 performed an injection near candidate time"""
+def find_injection(mjd: float, con: sqlite3.Connection) -> int:
+    """Run a SQL query to see if T0 performed an injection near candidate time and returns the injection id if found, None otherwise"""
 
     # Not sure why the offset from T0 is this much
     OFFSET = 15 / 86400  # Seconds to days
@@ -39,7 +36,7 @@ def is_injection(mjd: float, con: sqlite3.Connection) -> bool:
     with con:
         cur = con.cursor()
         cur.execute(
-            "SELECT COUNT(*) FROM injection WHERE mjd BETWEEN ? AND ?",
+            "SELECT * FROM injection WHERE mjd BETWEEN ? AND ?",
             (
                 mjd - OFFSET / 2,
                 mjd + OFFSET / 2,
@@ -47,13 +44,24 @@ def is_injection(mjd: float, con: sqlite3.Connection) -> bool:
         )
         res = cur.fetchone()
         logging.debug(f"SQL Query Result: {res}")
-        return res[0] == 1
+        if len(res) == 1:
+            return int(res[0])
+        else:
+            return None
 
 
-def insert_candidates(tab, con: sqlite3.Connection):
-    """Insert raw candidates (with corrected times) into the SQLite database"""
-
-    # Transform the candidate table to a list of tuples
-    con.executemany(
-        "INSERT INTO candidate(dm, snr, mjd, boxcar, sample) VALUES(?, ?, ?, ?, ?)"
+def insert_candidate(
+    cand_name: str,
+    dm: float,
+    snr: float,
+    mjd: float,
+    boxcar: int,
+    sample: int,
+    injection_id: int,
+    con: sqlite3.Connection,
+):
+    """Insert clustered candidates into the SQLite database"""
+    con.execute(
+        "INSERT INTO candidate(cand_name, dm, snr, mjd, boxcar, sample, injection) VALUES(?, ?, ?, ?, ?, ?, ?)",
+        (cand_name, dm, snr, mjd, boxcar, sample, injection_id),
     )
