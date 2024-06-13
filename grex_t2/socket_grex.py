@@ -47,6 +47,7 @@ def filter_candidates(
     )
 
     tab2 = cluster_heimdall.get_peak(tab)
+    print(tab2)
     col_trigger = np.zeros(len(tab2), dtype=int)
 
     # Ensure that the candidate table is not empty
