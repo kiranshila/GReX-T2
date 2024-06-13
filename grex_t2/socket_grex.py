@@ -45,7 +45,6 @@ def filter_candidates(
     cluster_heimdall.cluster_data(
         tab, metric="euclidean", allow_single_cluster=True, return_clusterer=False
     )
-    print(tab)
     tab2 = cluster_heimdall.get_peak(tab)
 
     col_trigger = np.zeros(len(tab2), dtype=int)

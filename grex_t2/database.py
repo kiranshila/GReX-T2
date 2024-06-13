@@ -20,7 +20,7 @@ def create_tables(con: sqlite3.Connection):
             "CREATE TABLE IF NOT EXISTS injection (id INTEGER PRIMARY KEY AUTOINCREMENT, mjd REAL NOT NULL, filename TEXT NOT NULL, sample INTEGER NOT NULL) STRICT"
         )
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS cluster (id INTEGER PRIMARY KEY AUTOINCREMENT, centroid INTEGER NOT NULL, injection INTEGER, FOREIGN KEY (centroid) REFERENCES candidate (id), FOREIGN KEY (injection) REFERENCES injection (id)) STRICT"
+            "CREATE TABLE IF NOT EXISTS cluster (id INTEGER PRIMARY KEY AUTOINCREMENT, peak INTEGER NOT NULL, injection INTEGER, FOREIGN KEY (centroid) REFERENCES candidate (id), FOREIGN KEY (injection) REFERENCES injection (id)) STRICT"
         )
         cur.execute(
             "CREATE TABLE IF NOT EXISTS cluster_member (candidate INTEGER PRIMARY KEY, cluster INTEGER NOT NULL, FOREIGN KEY (candidate) REFERENCES candidate (id), FOREIGN KEY (cluster) REFERENCES cluster (id)) WITHOUT ROWID"
@@ -49,8 +49,11 @@ def is_injection(mjd: float, con: sqlite3.Connection) -> bool:
         logging.debug(f"SQL Query Result: {res}")
         return res[0] == 1
 
+
 def insert_candidates(tab, con: sqlite3.Connection):
     """Insert raw candidates (with corrected times) into the SQLite database"""
 
     # Transform the candidate table to a list of tuples
-    con.executemany("INSERT INTO candidate(dm, snr, mjd, boxcar, sample) VALUES(?, ?, ?, ?, ?)")
+    con.executemany(
+        "INSERT INTO candidate(dm, snr, mjd, boxcar, sample) VALUES(?, ?, ?, ?, ?)"
+    )
