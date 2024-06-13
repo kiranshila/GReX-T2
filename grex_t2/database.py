@@ -23,7 +23,7 @@ def create_tables(con: sqlite3.Connection):
                 sample INTEGER NOT NULL
                 injection INTEGER, 
                 FOREIGN KEY (injection) REFERENCES injection (id)
-            ) STRICT NO ROWID"""
+            ) STRICT WITHOUT ROWID"""
         )
 
 
