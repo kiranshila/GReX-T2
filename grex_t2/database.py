@@ -15,7 +15,7 @@ def create_tables(con: sqlite3.Connection):
         # Setup the database's tables if they don't already exist
         cur.execute(
             """CREATE TABLE IF NOT EXISTS candidate (
-                cand_name TEXT PRIMARY KEY
+                cand_name TEXT PRIMARY KEY,
                 dm REAL NOT NULL,
                 snr REAL NOT NULL,
                 mjd REAL NOT NULL,
