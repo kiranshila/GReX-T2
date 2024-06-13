@@ -357,7 +357,7 @@ def dump_cluster_results_json(
         maxsnr,
         mjd,
         box,
-        itimes[imaxsnr],
+        int(itimes[imaxsnr]),
         injection_id,
         db_con,
     )
