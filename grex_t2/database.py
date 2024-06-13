@@ -36,7 +36,7 @@ def find_injection(mjd: float, con: sqlite3.Connection) -> int:
     with con:
         cur = con.cursor()
         cur.execute(
-            "SELECT * FROM injection WHERE mjd BETWEEN ? AND ?",
+            "SELECT id FROM injection WHERE mjd BETWEEN ? AND ?",
             (
                 mjd - OFFSET / 2,
                 mjd + OFFSET / 2,
