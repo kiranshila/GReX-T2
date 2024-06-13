@@ -61,7 +61,8 @@ def insert_candidate(
     con: sqlite3.Connection,
 ):
     """Insert clustered candidates into the SQLite database"""
-    con.execute(
-        "INSERT INTO candidate(cand_name, dm, snr, mjd, boxcar, sample, injection) VALUES(?, ?, ?, ?, ?, ?, ?)",
-        (cand_name, dm, snr, mjd, boxcar, sample, injection_id),
-    )
+    with con:
+        con.execute(
+            "INSERT INTO candidate(cand_name, dm, snr, mjd, boxcar, sample, injection) VALUES(?, ?, ?, ?, ?, ?, ?)",
+            (cand_name, dm, snr, mjd, boxcar, sample, injection_id),
+        )

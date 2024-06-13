@@ -10,7 +10,7 @@ PORT = 12345
 # TODO Write to OpenTelemetry as well to collect logs for grafana
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="[%(asctime)s] [%(levelname)s] %(message)s",
     handlers=[logging.FileHandler("output.log"), logging.StreamHandler()],
 )
