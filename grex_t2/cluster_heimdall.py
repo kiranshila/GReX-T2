@@ -322,9 +322,9 @@ def dump_cluster_results_json(
     maxsnr = tab["snr"].max()
     imaxsnr = np.where(tab["snr"] == maxsnr)[0][0]
     specnum = (int(itimes[imaxsnr]) - OFFSET) * DOWNSAMPLE
-    dm = tab["dm"][imaxsnr]
-    box = tab["ibox"][imaxsnr]
-    mjd = tab["mjds"][imaxsnr]
+    dm = float(tab["dm"][imaxsnr])
+    box = int(tab["ibox"][imaxsnr])
+    mjd = float(tab["mjds"][imaxsnr])
 
     # if no injection file or no coincident injection
     candname = names.increment_name(mjd, lastname=lastname)
